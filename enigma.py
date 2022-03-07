@@ -4,3 +4,8 @@ class Enigma:
         
         
     
+
+class Walze:
+  def __init__(self,nummer):
+    if(nummer=='1'):
+      self.verdrahtung=[5,11,]
