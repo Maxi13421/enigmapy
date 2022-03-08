@@ -1,16 +1,72 @@
+chargrid = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"]
+
+def chartoint(character):
+    return chargrid.index(character)%26
+
+def inttochar(integer):
+    return chargrid[integer]
+
+  
+def classicprint(string):
+    for i in range(len(string)):
+        print(string[i], end="")
+        if ((i+1)%5==0):
+            print(" ", end="")
+
+
+
+
 class Enigma:
-    def __init__(self,w1,position1,w2,position2,w3,position3,umkehrwalze):
-        walze1 = [Walze(),Walze(),Walze(),Walze(),Walze()]
+    def __init__(self,w1,position1,w2,position2,w3,position3,umkehrwalze,steckbrettpaare = []):
+        self.walzen = [Walze(w1,position1),Walze(w2,position2),Walze(w3,position3),Walze(umkehrwalze,0)]
+        self.steckbrett = Steckbrett(steckbrettpaare)
+        
+    def walzenschalten(self):
+        self.walzen[0].position=(self.walzen[0].position+1)%26
+        if(self.walzen[0].übertragskerbe==self.walzen[0].position):
+            self.walzen[1].position=(self.walzen[1].position+1)%26
+        else:
+            if(self.walzen[1].übertragskerbe==self.walzen[1].position+1):
+                self.walzen[1].position=(self.walzen[1].position+1)%26
+        if(self.walzen[1].übertragskerbe==self.walzen[1].position+1):
+            self.walzen[2].position=(self.walzen[2].position+1)%26
         
         
+
+    def schlüsselnChar(self,integer):
+        self.walzenschalten()
+        curint = integer
+        curint = (self.steckbrett.verdrahtung[curint]-1)%26
+        for i in range(3):
+            curint = (self.walzen[i].verdrahtung[(curint+self.walzen[i].position)%26]-1-self.walzen[i].position)%26
+        curint = self.walzen[3].verdrahtung[curint]-1
+        for i in range(3):
+            curint = (self.walzen[2-i].verdrahtung.index((curint+self.walzen[2-i].position)%26+1)-self.walzen[2-i].position)%26
+        curint = (self.steckbrett.verdrahtung.index(curint+1))%26
+        return curint
+
+    def schlüsselnstr(self,string):
+        newstring = ""
+        for i in string:
+          if(i in chargrid):
+            integer = chartoint(i)
+            newstring += inttochar(self.schlüsselnChar(integer))
+        return newstring
+    
+          
+            
+class Steckbrett:
+    def __init__(self,paare):
+        self.verdrahtung = [i+1 for i in range(26)]
+        for i in range(int(len(paare)/2)):
+            self.verdrahtung[chartoint(paare[2*i])] = chartoint(paare[2*i+1]) + 1
+            self.verdrahtung[chartoint(paare[2*i+1])] = chartoint(paare[2*i]) + 1
+    
     
 
 class Walze:
-    
-    übertragskerbe=1000
-    position=0
-    
-    def __init__(self,nummer):
+    def __init__(self,nummer,position):
+        self.position = position
         if(nummer=='1'):
             self.verdrahtung=[5,11,13,6,12,7,4,17,22,26,14,20,15,23,25,8,24,21,19,16,1,9,2,18,3,10]
             self.übertragskerbe=17
@@ -49,6 +105,6 @@ class Walze:
             self.verdrahtung=[25,18,21,8,17,19,12,4,16,24,14,7,15,11,13,9,5,2,6,26,3,23,22,10,1,20]
         if(nummer=='C'):
             self.verdrahtung=[6,22,16,10,9,1,15,25,5,4,18,26,24,23,7,3,20,11,21,17,19,2,14,13,8,12]
-            
-    def drehen(self):
-        self.position+=1
+                     
+Enigma1 = Enigma("2",0,"2",0,"3",0,"B",["A","B","C","D"])
+classicprint(Enigma1.schlüsselnstr("Ein Testsatz mit Sonder- und Leerzeichen."))
